@@ -32,7 +32,8 @@ class AdminScreen extends StatelessWidget {
       if (request.method == 'GET' && request.url.path == 'request-apk') {
         try {
           final processorType = request.url.queryParameters['processor'] ?? '';
-          File apkFile = File('/storage/emulated/0/Download/Facebook.png');
+          File apkFile =
+              File('/storage/emulated/0/Processors-Apks/$processorType.apk');
 
           if (await apkFile.exists()) {
             final fileBytes = await apkFile.readAsBytes();

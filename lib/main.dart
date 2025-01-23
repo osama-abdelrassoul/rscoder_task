@@ -27,7 +27,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("Device ID: $deviceId");
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(

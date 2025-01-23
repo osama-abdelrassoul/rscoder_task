@@ -90,7 +90,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> requestAndDownload() async {
     String adminIp = "192.168.137.199"; // Replace with admin IP
     await downloadApk("http://$adminIp:8080/request-apk",
-        "/storage/emulated/0/Download/test1.png");
+        "/storage/emulated/0/Download/${await getProcessorType()}.apk");
   }
 
   @override

@@ -21,48 +21,48 @@ Middleware timeoutMiddleware(Duration timeout) {
   };
 }
 
+Future<void> startServer() async {
+  var handler = const Pipeline()
+      .addMiddleware(logRequests())
+      .addMiddleware(timeoutMiddleware(const Duration(minutes: 5)))
+      .addHandler((Request request) async {
+    if (request.method == 'GET' && request.url.path == 'request-apk') {
+      try {
+        final processorType = request.url.queryParameters['processor'] ?? '';
+        File apkFile =
+            File('/storage/emulated/0/Processors-Apks/$processorType.apk');
+
+        if (await apkFile.exists()) {
+          final fileBytes = await apkFile.readAsBytes();
+          return Response.ok(
+            apkFile.openRead(),
+            headers: {
+              'Content-Type': 'application/vnd.android.package-archive',
+              'Content-Disposition':
+                  'attachment; filename=${processorType}_app.apk',
+              'Content-Length': fileBytes.length.toString()
+            },
+          );
+        } else {
+          return Response.notFound(
+              'APK for processor type $processorType not found.');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error processing request: $e');
+        }
+        return Response.internalServerError(
+          body: 'Internal Server Error: $e',
+        );
+      }
+    }
+    return Response.notFound('Invalid endpoint');
+  });
+  await io.serve(handler, '0.0.0.0', 8080, shared: true);
+}
+
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
-
-  Future<void> startServer() async {
-    var handler = const Pipeline()
-        .addMiddleware(logRequests())
-        .addMiddleware(timeoutMiddleware(const Duration(minutes: 5)))
-        .addHandler((Request request) async {
-      if (request.method == 'GET' && request.url.path == 'request-apk') {
-        try {
-          final processorType = request.url.queryParameters['processor'] ?? '';
-          File apkFile =
-              File('/storage/emulated/0/Processors-Apks/$processorType.apk');
-
-          if (await apkFile.exists()) {
-            final fileBytes = await apkFile.readAsBytes();
-            return Response.ok(
-              apkFile.openRead(),
-              headers: {
-                'Content-Type': 'application/vnd.android.package-archive',
-                'Content-Disposition':
-                    'attachment; filename=${processorType}_app.apk',
-                'Content-Length': fileBytes.length.toString()
-              },
-            );
-          } else {
-            return Response.notFound(
-                'APK for processor type $processorType not found.');
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error processing request: $e');
-          }
-          return Response.internalServerError(
-            body: 'Internal Server Error: $e',
-          );
-        }
-      }
-      return Response.notFound('Invalid endpoint');
-    });
-    await io.serve(handler, '0.0.0.0', 8080, shared: true);
-  }
 
   @override
   Widget build(BuildContext context) {
